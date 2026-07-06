@@ -1,13 +1,13 @@
 {
-  "name": "agent-flow",
-  "displayName": "Agent Flow",
+  "name": "kirameki",
+  "displayName": "Kirameki",
   "description": "Real-time visualization of Claude Code and Codex agent orchestration",
-  "version": "0.8.1",
-  "publisher": "simon-p",
+  "version": "0.1.0",
+  "publisher": "lumenastrum",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/patoles/agent-flow"
+    "url": "https://github.com/lumenastrum/kirameki"
   },
   "icon": "media/icon.png",
   "engines": {
@@ -16,43 +16,43 @@
   "categories": ["Visualization", "Other"],
   "keywords": ["llm", "agent", "claude", "codex", "ai", "visualization", "orchestration"],
   "activationEvents": [
-    "onWebviewPanel:agentVisualizer"
+    "onWebviewPanel:kirameki"
   ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "agentVisualizer.open",
-        "title": "Open Agent Flow",
-        "category": "Agent Flow"
+        "command": "kirameki.open",
+        "title": "Open Kirameki",
+        "category": "Kirameki"
       },
       {
-        "command": "agentVisualizer.openToSide",
-        "title": "Open Agent Flow to Side",
-        "category": "Agent Flow"
+        "command": "kirameki.openToSide",
+        "title": "Open Kirameki to Side",
+        "category": "Kirameki"
       },
       {
-        "command": "agentVisualizer.connectToAgent",
+        "command": "kirameki.connectToAgent",
         "title": "Connect to Running Agent",
-        "category": "Agent Flow"
+        "category": "Kirameki"
       },
       {
-        "command": "agentVisualizer.configureHooks",
+        "command": "kirameki.configureHooks",
         "title": "Configure Claude Code Hooks",
-        "category": "Agent Flow"
+        "category": "Kirameki"
       }
     ],
     "keybindings": [
       {
-        "command": "agentVisualizer.open",
+        "command": "kirameki.open",
         "key": "ctrl+alt+a",
         "mac": "cmd+alt+a"
       }
     ],
     "configuration": {
-      "title": "Agent Flow",
+      "title": "Kirameki",
       "properties": {
-        "agentVisualizer.runtime": {
+        "kirameki.runtime": {
           "type": "string",
           "enum": ["auto", "claude", "codex"],
           "enumDescriptions": [
@@ -63,17 +63,17 @@
           "default": "auto",
           "description": "Which agent runtime(s) to watch. In auto mode, runtimes you don't use are harmless no-ops (no session directory = nothing to scan)."
         },
-        "agentVisualizer.devServerPort": {
+        "kirameki.devServerPort": {
           "type": "number",
           "default": 0,
           "description": "Port for the development server. Set to 0 (default) for production mode, or 3002 for development."
         },
-        "agentVisualizer.eventLogPath": {
+        "kirameki.eventLogPath": {
           "type": "string",
           "default": "",
           "description": "Path to JSONL event log file to watch for agent events"
         },
-        "agentVisualizer.autoOpen": {
+        "kirameki.autoOpen": {
           "type": "boolean",
           "default": false,
           "description": "Automatically open the visualizer when an agent session starts"

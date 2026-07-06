@@ -1,9 +1,9 @@
 {
-  "name": "agent-flow-app",
-  "version": "0.8.1",
-  "description": "Real-time visualization of AI agent orchestration — standalone web app",
+  "name": "kirameki-app",
+  "version": "0.1.0",
+  "description": "Kirameki — real-time visualization of AI agent orchestration, in pink and gold",
   "bin": {
-    "agent-flow": "dist/app.js"
+    "kirameki": "dist/app.js"
   },
   "files": [
     "dist/"
@@ -14,13 +14,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/patoles/agent-flow"
+    "url": "https://github.com/lumenastrum/kirameki"
   },
   "keywords": [
     "agent",
     "visualization",
     "ai",
     "llm",
-    "agent-flow"
+    "kirameki"
   ]
 }

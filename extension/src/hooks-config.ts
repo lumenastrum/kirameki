@@ -26,11 +26,11 @@ function readGlobalSettings(): Record<string, unknown> | null {
   }
 }
 
-/** Check whether a single hook entry belongs to Agent Flow */
-function isAgentFlowHook(entry: ClaudeHookEntry): boolean {
+/** Check whether a single hook entry belongs to Kirameki */
+function isKiramekiHook(entry: ClaudeHookEntry): boolean {
   return !!entry.hooks?.some(h =>
     // Normalize backslashes to forward slashes so Windows paths
-    // (e.g. "C:\\Users\\...\\agent-flow\\hook.js") match HOOK_COMMAND_MARKER.
+    // (e.g. "C:\\Users\\...\\kirameki\\hook.js") match HOOK_COMMAND_MARKER.
     h.command?.replace(/\\/g, '/').includes(HOOK_COMMAND_MARKER) ||
     h.url?.startsWith(HOOK_URL_PREFIX),
   )
@@ -39,12 +39,12 @@ function isAgentFlowHook(entry: ClaudeHookEntry): boolean {
 // ─── Detection ────────────────────────────────────────────────────────────────
 
 function hooksAlreadyConfigured(): boolean {
-  if (hasAgentFlowHooks(GLOBAL_SETTINGS_PATH)) { return true }
+  if (hasKiramekiHooks(GLOBAL_SETTINGS_PATH)) { return true }
 
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
   if (workspaceFolder) {
     const projectPath = path.join(workspaceFolder, '.claude', 'settings.local.json')
-    if (hasAgentFlowHooks(projectPath)) {
+    if (hasKiramekiHooks(projectPath)) {
       // Backfill manifest for workspaces configured before the manifest existed
       addWorkspaceToManifest(workspaceFolder)
       return true
@@ -54,7 +54,7 @@ function hooksAlreadyConfigured(): boolean {
   return false
 }
 
-function hasAgentFlowHooks(settingsPath: string): boolean {
+function hasKiramekiHooks(settingsPath: string): boolean {
   try {
     if (!fs.existsSync(settingsPath)) { return false }
     const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'))
@@ -62,7 +62,7 @@ function hasAgentFlowHooks(settingsPath: string): boolean {
     if (!hooks || typeof hooks !== 'object') { return false }
     return Object.values(hooks).some((entries: unknown) => {
       if (!Array.isArray(entries)) { return false }
-      return entries.some((entry: unknown) => isAgentFlowHook(entry as ClaudeHookEntry))
+      return entries.some((entry: unknown) => isKiramekiHook(entry as ClaudeHookEntry))
     })
   } catch (err) {
     log.debug('Failed to read hooks settings:', err)
@@ -97,8 +97,8 @@ export async function configureClaudeHooks(): Promise<void> {
   const existingHooks = (settings.hooks || {}) as Record<string, unknown[]>
   for (const [event, entries] of Object.entries(hooksConfig)) {
     const existing = existingHooks[event] || []
-    // Remove previous agent-flow hooks (command or legacy HTTP)
-    const filtered = existing.filter((entry: unknown) => !isAgentFlowHook(entry as ClaudeHookEntry))
+    // Remove previous kirameki hooks (command or legacy HTTP)
+    const filtered = existing.filter((entry: unknown) => !isKiramekiHook(entry as ClaudeHookEntry))
     existingHooks[event] = [...filtered, ...entries]
   }
 
@@ -112,7 +112,7 @@ export async function configureClaudeHooks(): Promise<void> {
   fs.writeFileSync(GLOBAL_SETTINGS_PATH, JSON.stringify(settings, null, 2) + '\n')
 
   vscode.window.showInformationMessage(
-    'Claude Code hooks configured. New sessions will stream events to Agent Flow.',
+    'Claude Code hooks configured. New sessions will stream events to Kirameki.',
   )
 }
 

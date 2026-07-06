@@ -1,5 +1,5 @@
 node_modules
-agent-flow.dev*.log
+kirameki.dev*.log
 dist
 .vite
 *.local

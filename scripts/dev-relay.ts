@@ -8,9 +8,9 @@ import { createRelay } from './relay'
 import { DEFAULT_RELAY_PORT, DEV_WEB_ORIGIN_PATTERN } from '../extension/src/constants'
 
 async function main() {
-  const workspace = process.argv[2] || process.env.AGENT_FLOW_WORKSPACE || process.cwd()
+  const workspace = process.argv[2] || process.env.KIRAMEKI_WORKSPACE || process.cwd()
 
-  console.log('Starting Agent Flow dev relay...\n')
+  console.log('Starting Kirameki dev relay...\n')
   console.log(`Workspace: ${workspace}`)
 
   const relay = await createRelay({ workspace, verbose: true })
@@ -37,7 +37,7 @@ async function main() {
     }
 
     res.writeHead(200, { 'Content-Type': 'text/plain' })
-    res.end('Agent Flow Dev Relay')
+    res.end('Kirameki Dev Relay')
   })
 
   server.listen(DEFAULT_RELAY_PORT, '127.0.0.1', () => {

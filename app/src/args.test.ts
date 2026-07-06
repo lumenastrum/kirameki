@@ -8,7 +8,7 @@ test('parseArgs reads defaults', () => {
   assert.equal(args.port, DEFAULT_RELAY_PORT)
   assert.equal(args.open, true)
   assert.equal(args.verbose, false)
-  assert.equal(args.workspace, process.env.AGENT_FLOW_WORKSPACE || '')
+  assert.equal(args.workspace, process.env.KIRAMEKI_WORKSPACE || '')
 })
 
 test('parseArgs reads workspace option', () => {

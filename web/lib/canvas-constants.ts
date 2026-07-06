@@ -26,7 +26,7 @@ export const TOOL_DEDUP_WINDOW_S = 3
 
 // ─── LocalStorage keys ─────────────────────────────────────────────────────
 
-export const SOUND_PREF_KEY = 'agent-viz-sound'
+export const SOUND_PREF_KEY = 'kirameki-sound'
 
 // ─── Mock scenario buffer ──────────────────────────────────────────────────
 

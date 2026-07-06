@@ -13,10 +13,10 @@ if exist "%BUNDLED_NODE%\node.exe" (
 
 cd /d "%ROOT%"
 
-set "AGENT_FLOW_WORKSPACE=%WORKSPACE%"
-set "AGENT_FLOW_WEB_PORT=%WEB_PORT%"
+set "KIRAMEKI_WORKSPACE=%WORKSPACE%"
+set "KIRAMEKI_WEB_PORT=%WEB_PORT%"
 
-echo Starting Agent Flow
+echo Starting Kirameki
 echo UI:        http://localhost:%WEB_PORT%
 echo Relay:     http://127.0.0.1:3001/events
 echo Workspace: %WORKSPACE%
@@ -25,5 +25,5 @@ echo.
 corepack pnpm run dev
 
 echo.
-echo Agent Flow stopped.
+echo Kirameki stopped.
 pause

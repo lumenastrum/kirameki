@@ -15,8 +15,8 @@ const DEFAULT_RELAY_PORT = '3001'
 const DEFAULT_WEB_PORT = '3333'
 
 function parseArgs(argv) {
-  let workspace = process.env.AGENT_FLOW_WORKSPACE || ''
-  let webPort = process.env.AGENT_FLOW_WEB_PORT || DEFAULT_WEB_PORT
+  let workspace = process.env.KIRAMEKI_WORKSPACE || ''
+  let webPort = process.env.KIRAMEKI_WEB_PORT || DEFAULT_WEB_PORT
   const passthrough = []
 
   for (let i = 0; i < argv.length; i++) {
@@ -58,8 +58,8 @@ const env = {
   ...process.env,
   NEXT_PUBLIC_DEMO: '0',
   NEXT_PUBLIC_RELAY_PORT: process.env.NEXT_PUBLIC_RELAY_PORT || DEFAULT_RELAY_PORT,
-  AGENT_FLOW_WEB_PORT: webPort,
-  ...(workspace ? { AGENT_FLOW_WORKSPACE: workspace } : {}),
+  KIRAMEKI_WEB_PORT: webPort,
+  ...(workspace ? { KIRAMEKI_WORKSPACE: workspace } : {}),
 }
 
 const build = spawnSync(process.execPath, [path.join(__dirname, 'build-relay.js')], {
@@ -79,7 +79,7 @@ const packageManager = packageManagerCommand()
 const relay = run(process.execPath, relayArgs, { env })
 const web = run(packageManager.command, [
   ...packageManager.args,
-  '--filter', 'agent-flow-web',
+  '--filter', 'kirameki-web',
   'run', 'dev',
   '--port', webPort,
   ...passthrough,

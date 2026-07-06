@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
  * vscode:uninstall script — runs when the extension is uninstalled.
- * Removes Agent Flow hooks from ALL known Claude Code settings files,
- * then deletes the entire ~/.claude/agent-flow/ directory.
+ * Removes Kirameki hooks from ALL known Claude Code settings files,
+ * then deletes the entire ~/.claude/kirameki/ directory.
  *
  * Sources for workspace discovery (checked in order, deduplicated):
  * 1. workspaces.json manifest — persists across crashes/restarts
@@ -13,9 +13,9 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const HOOK_COMMAND_MARKER = 'agent-flow/hook.js';
+const HOOK_COMMAND_MARKER = 'kirameki/hook.js';
 const HOOK_URL_PREFIX = 'http://127.0.0.1:';
-const DISCOVERY_DIR = path.join(os.homedir(), '.claude', 'agent-flow');
+const DISCOVERY_DIR = path.join(os.homedir(), '.claude', 'kirameki');
 const MANIFEST_PATH = path.join(DISCOVERY_DIR, 'workspaces.json');
 
 // ─── Remove hooks from a settings file ─────────────────────────────────────
@@ -99,5 +99,5 @@ for (const workspace of collectWorkspaces()) {
   removeHooksFromFile(path.join(workspace, '.claude', 'settings.local.json'));
 }
 
-// 3. Delete entire agent-flow directory (manifest, discovery files, hook script)
+// 3. Delete entire kirameki directory (manifest, discovery files, hook script)
 try { fs.rmSync(DISCOVERY_DIR, { recursive: true, force: true }); } catch { /* best effort */ }

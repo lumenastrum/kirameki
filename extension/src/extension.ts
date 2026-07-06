@@ -16,7 +16,7 @@ let eventSource: JsonlEventSource | undefined
 let runtimes: AgentRuntime[] = []
 
 function readConfiguredMode(): ConfiguredRuntimeMode {
-  const raw = vscode.workspace.getConfiguration('agentVisualizer').get<string>('runtime', 'auto')
+  const raw = vscode.workspace.getConfiguration('kirameki').get<string>('runtime', 'auto')
   return raw === 'claude' || raw === 'codex' ? raw : 'auto'
 }
 
@@ -66,7 +66,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // ─── Commands ──────────────────────────────────────────────────────────────
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('agentVisualizer.open', () => {
+    vscode.commands.registerCommand('kirameki.open', () => {
       const panel = VisualizerPanel.create(context.extensionUri, vscode.ViewColumn.One)
       wirePanel(panel)
       promptHookSetupIfNeededForClaude(context)
@@ -74,7 +74,7 @@ export async function activate(context: vscode.ExtensionContext) {
   )
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('agentVisualizer.openToSide', () => {
+    vscode.commands.registerCommand('kirameki.openToSide', () => {
       const panel = VisualizerPanel.create(context.extensionUri, vscode.ViewColumn.Beside)
       wirePanel(panel)
       promptHookSetupIfNeededForClaude(context)
@@ -82,7 +82,7 @@ export async function activate(context: vscode.ExtensionContext) {
   )
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('agentVisualizer.connectToAgent', async () => {
+    vscode.commands.registerCommand('kirameki.connectToAgent', async () => {
       const choice = await vscode.window.showQuickPick(
         [
           { label: '$(radio-tower) Claude Code Hooks', description: 'Auto-configure hooks for live streaming', value: 'hooks' },
@@ -118,7 +118,7 @@ export async function activate(context: vscode.ExtensionContext) {
   )
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('agentVisualizer.configureHooks', async () => {
+    vscode.commands.registerCommand('kirameki.configureHooks', async () => {
       await configureClaudeHooks()
     }),
   )
@@ -195,7 +195,7 @@ function wirePanel(panel: VisualizerPanel): void {
         break
 
       case 'request-connect':
-        vscode.commands.executeCommand('agentVisualizer.connectToAgent')
+        vscode.commands.executeCommand('kirameki.connectToAgent')
         break
 
       case 'request-disconnect':

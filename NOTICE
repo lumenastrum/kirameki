@@ -1,0 +1,13 @@
+Kirameki
+Copyright 2026 Andres Pineda & Clio
+
+This product is a fork of Agent Flow (https://github.com/patoles/agent-flow),
+Copyright Simon Patole, licensed under the Apache License, Version 2.0.
+
+Substantial modifications from the original include: complete rebrand
+(names, identifiers, discovery paths, environment variables), removal of
+all telemetry, and a full visual redesign (palette, glass chrome, canvas
+rendering colors, icons).
+
+"Agent Flow" and its logos are trademarks of Simon Patole and are not used
+by this project.

@@ -5,7 +5,7 @@ export function parseArgs(argv: string[]) {
   let port = DEFAULT_RELAY_PORT
   let open = true
   let verbose = false
-  let workspace = process.env.AGENT_FLOW_WORKSPACE || ''
+  let workspace = process.env.KIRAMEKI_WORKSPACE || ''
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i]
@@ -22,7 +22,7 @@ export function parseArgs(argv: string[]) {
       verbose = true
     } else if (arg === '--help' || arg === '-h') {
       console.log(`
-Usage: agent-flow [options]
+Usage: kirameki [options]
 
 Options:
   -p, --port <number>  Port for the server (default: ${DEFAULT_RELAY_PORT})
