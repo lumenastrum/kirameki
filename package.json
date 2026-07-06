@@ -1,0 +1,23 @@
+{
+  "private": true,
+  "scripts": {
+    "setup": "node scripts/setup.js",
+    "dev": "node scripts/dev.js",
+    "dev:relay": "node scripts/build-relay.js && node scripts/.dev-relay.js",
+    "dev:demo": "node scripts/dev-web.js --demo",
+    "dev:web": "node scripts/dev-web.js",
+    "dev:extension": "pnpm --filter agent-flow run watch",
+    "build:extension": "pnpm --filter agent-flow run build",
+    "build:web": "pnpm --filter agent-flow-web run build",
+    "build:webview": "pnpm --filter agent-flow-web run build:webview",
+    "build:all": "pnpm run build:webview && pnpm run build:extension",
+    "build:app": "node app/build.js",
+    "test": "node --import tsx --test \"scripts/**/*.test.ts\" \"app/src/**/*.test.ts\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "esbuild": "^0.20.2",
+    "tsx": "^4.21.0"
+  },
+  "packageManager": "pnpm@9.15.4+sha512.b2dc20e2fc72b3e18848459b37359a32064663e5627a51e4c74b2c29dd8e8e0491483c3abb40789cfd578bf362fb6ba8261b05f0387d76792ed6e23ea3b1b6a0"
+}
