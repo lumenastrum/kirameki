@@ -12,6 +12,25 @@ export function buildEdgeMap(edges: Edge[]): Map<string, Edge> {
   return map
 }
 
+/** Four-point sparkle path (the Kirameki mark), centered at (x, y). */
+function sparklePath(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, rotation: number) {
+  const k = r * 0.28
+  ctx.save()
+  ctx.translate(x, y)
+  ctx.rotate(rotation)
+  ctx.beginPath()
+  ctx.moveTo(0, -r)
+  ctx.lineTo(k, -k)
+  ctx.lineTo(r, 0)
+  ctx.lineTo(k, k)
+  ctx.lineTo(0, r)
+  ctx.lineTo(-k, k)
+  ctx.lineTo(-r, 0)
+  ctx.lineTo(-k, -k)
+  ctx.closePath()
+  ctx.restore()
+}
+
 export function drawParticles(
   ctx: CanvasRenderingContext2D,
   particles: Particle[],
@@ -76,13 +95,14 @@ export function drawParticles(
     const glowSprite = getGlowSprite(particle.color, glowR, '60', '00')
     ctx.drawImage(glowSprite, px - glowR, py - glowR)
 
-    // Particle core
-    ctx.beginPath()
+    // Particle core — a slowly spinning four-point sparkle. Kirameki means
+    // sparkle; the particles should live up to the name.
+    const rotation = time * 1.5 + phase
     ctx.fillStyle = particle.color
-    ctx.arc(px, py, particle.size, 0, Math.PI * 2)
+    sparklePath(ctx, px, py, particle.size * 2.4, rotation)
     ctx.fill()
     ctx.beginPath()
-    ctx.fillStyle = COLORS.holoHot + '80'
+    ctx.fillStyle = COLORS.holoHot + '90'
     ctx.arc(px, py, particle.size * PARTICLE_DRAW.coreHighlightScale, 0, Math.PI * 2)
     ctx.fill()
 

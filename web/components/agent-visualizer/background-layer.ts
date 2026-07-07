@@ -61,18 +61,32 @@ export function drawBackground(
     ctx.fillRect(0, 0, width, height)
   }
 
-  // Depth particles (parallax)
+  // Depth particles (parallax) — each twinkles on its own slow phase,
+  // and the deepest few flare into tiny four-point glints at their peak.
   for (const p of particles) {
     const parallaxFactor = 0.3 + p.depth * 0.7
     const px = p.x + transform.x * parallaxFactor * 0.1
     const py = p.y + transform.y * parallaxFactor * 0.1
     const size = p.size * (0.5 + p.depth * 0.5)
-    const alpha = p.brightness * (0.5 + p.depth * 0.5)
+    const twinkle = 0.55 + 0.45 * Math.sin(time * (0.6 + p.speed * 4) + p.x * 0.013 + p.y * 0.007)
+    const alpha = p.brightness * (0.5 + p.depth * 0.5) * twinkle
 
     ctx.beginPath()
     ctx.fillStyle = COLORS.holoBase + alphaHex(alpha)
     ctx.arc(px, py, size, 0, Math.PI * 2)
     ctx.fill()
+
+    // Glint: a brief cross flare when a deep star peaks
+    if (p.depth > 0.82 && twinkle > 0.9) {
+      const flare = (twinkle - 0.9) * 10 // 0..1
+      const arm = size * (2 + flare * 3)
+      ctx.strokeStyle = COLORS.holoBright + alphaHex(alpha * flare)
+      ctx.lineWidth = 0.6
+      ctx.beginPath()
+      ctx.moveTo(px - arm, py); ctx.lineTo(px + arm, py)
+      ctx.moveTo(px, py - arm); ctx.lineTo(px, py + arm)
+      ctx.stroke()
+    }
   }
 
   // Hex grid (optional)
