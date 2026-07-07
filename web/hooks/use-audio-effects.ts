@@ -60,5 +60,10 @@ export function useAudioEffects(
     }
   }, [])
 
-  return { isMuted, seekingRef, handleToggleMute }
+  /** Permission-wait doorbell, respects the mute setting via the master gain. */
+  const playPermissionChime = useCallback(() => {
+    audioRef.current?.playPermissionChime()
+  }, [])
+
+  return { isMuted, seekingRef, handleToggleMute, playPermissionChime }
 }

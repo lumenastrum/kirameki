@@ -31,6 +31,8 @@ interface BridgeHookResult {
   selectedSessionIdRef: React.RefObject<string | null>
   /** Session IDs that have received events while not selected */
   sessionsWithActivity: Set<string>
+  /** Session IDs currently blocked on a permission prompt (any session, selected or not) */
+  sessionsAwaitingPermission: Set<string>
   /** Remove a session from the list */
   removeSession: (sessionId: string) => void
 }
@@ -62,6 +64,7 @@ export function useVSCodeBridge(): BridgeHookResult {
    *  Prevents the animation frame from processing events in the wrong simulation context. */
   const sessionSwitchPendingRef = useRef(false)
   const [sessionsWithActivity, setSessionsWithActivity] = useState<Set<string>>(new Set())
+  const [sessionsAwaitingPermission, setSessionsAwaitingPermission] = useState<Set<string>>(new Set())
 
   // Connect to standalone dev relay server via SSE when not in VS Code
   useEffect(() => {
@@ -126,6 +129,28 @@ export function useVSCodeBridge(): BridgeHookResult {
         sessionEventsRef.current.set(event.sessionId, buf)
       }
 
+      // Track permission-wait per session, across ALL sessions. A session
+      // blocked on a permission prompt emits nothing (Claude Code is frozen),
+      // so any subsequent event from it means the prompt was resolved.
+      if (event.sessionId) {
+        const sid = event.sessionId
+        if (event.type === 'permission_requested') {
+          setSessionsAwaitingPermission(prev => {
+            if (prev.has(sid)) return prev
+            const next = new Set(prev)
+            next.add(sid)
+            return next
+          })
+        } else {
+          setSessionsAwaitingPermission(prev => {
+            if (!prev.has(sid)) return prev
+            const next = new Set(prev)
+            next.delete(sid)
+            return next
+          })
+        }
+      }
+
       // Deliver to pending if session matches (ref is always current).
       // Skip if a session switch is pending — useLayoutEffect will flush
       // from the session buffer once the simulation state is swapped.
@@ -178,6 +203,7 @@ export function useVSCodeBridge(): BridgeHookResult {
         pendingEventsRef.current.length = 0
         sessionEventsRef.current.clear()
         setSessionsWithActivity(new Set())
+        setSessionsAwaitingPermission(new Set())
         dismissedSessionsRef.current.clear()
         setEventVersion(v => v + 1)
         return
@@ -229,6 +255,12 @@ export function useVSCodeBridge(): BridgeHookResult {
         setSessions(prev => prev.map(s =>
           s.id === sessionId ? { ...s, status: 'completed' as const } : s
         ))
+        setSessionsAwaitingPermission(prev => {
+          if (!prev.has(sessionId)) return prev
+          const next = new Set(prev)
+          next.delete(sessionId)
+          return next
+        })
       }
     })
 
@@ -314,6 +346,7 @@ export function useVSCodeBridge(): BridgeHookResult {
     flushSessionEvents,
     getSessionEventCount,
     sessionsWithActivity,
+    sessionsAwaitingPermission,
     removeSession,
   }
 }

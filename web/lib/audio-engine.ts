@@ -115,6 +115,30 @@ export class AudioEngine {
     }
   }
 
+  /** Two-note doorbell — an agent is waiting for permission.
+   *  Slightly more assertive than the ambient sounds: this one is a summons. */
+  playPermissionChime() {
+    this.ensureContext()
+    if (!this.ctx || !this.masterGain) return
+
+    const now = this.ctx.currentTime
+    const notes = [1318.5, 1046.5] // E6 → C6, classic doorbell third
+    for (let i = 0; i < notes.length; i++) {
+      const osc = this.ctx.createOscillator()
+      const gain = this.ctx.createGain()
+      const start = now + i * 0.18
+      osc.type = 'sine'
+      osc.frequency.value = notes[i]
+      gain.gain.setValueAtTime(0.001, start)
+      gain.gain.linearRampToValueAtTime(0.06, start + 0.02)
+      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.45)
+      osc.connect(gain)
+      gain.connect(this.masterGain!)
+      osc.start(start)
+      osc.stop(start + 0.45)
+    }
+  }
+
   /** Soft low tone — error occurred */
   playError() {
     this.ensureContext()

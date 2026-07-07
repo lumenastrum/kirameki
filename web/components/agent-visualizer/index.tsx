@@ -24,6 +24,7 @@ import { MOCK_DURATION } from "@/lib/mock-scenario"
 import { MessageFeedPanel } from "./message-feed-panel"
 import { TopBar } from "./top-bar"
 import { useAudioEffects } from "@/hooks/use-audio-effects"
+import { usePermissionAlerts } from "@/hooks/use-permission-alerts"
 
 export function AgentVisualizer() {
   const bridge = useVSCodeBridge()
@@ -79,7 +80,8 @@ export function AgentVisualizer() {
   const [zoomToFitTrigger, setZoomToFitTrigger] = useState(0)
 
   const [isReviewing, setIsReviewing] = useState(false)
-  const { isMuted, seekingRef, handleToggleMute } = useAudioEffects(agents, toolCalls, isReviewing)
+  const { isMuted, seekingRef, handleToggleMute, playPermissionChime } = useAudioEffects(agents, toolCalls, isReviewing)
+  usePermissionAlerts(bridge.sessionsAwaitingPermission, bridge.sessions, playPermissionChime)
 
   // Auto-play on mount
   useEffect(() => {
