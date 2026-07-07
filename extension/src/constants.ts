@@ -208,4 +208,5 @@ export const SYSTEM_CONTENT_PREFIXES = [
   '<system-reminder',
   '<available-deferred-tools',
   '<command-name',
+  '<local-command-caveat',
 ] as const

@@ -26,6 +26,20 @@ export async function startServer(options: ServerOptions) {
       return relay.handleSSE(req, res)
     }
 
+    // Session history (time machine)
+    if (req.url === '/sessions/history') {
+      res.writeHead(200, { 'Content-Type': 'application/json' })
+      res.end(JSON.stringify(relay.listHistory()))
+      return
+    }
+    if (req.url?.startsWith('/sessions/replay')) {
+      const id = new URL(req.url, 'http://localhost').searchParams.get('id') || ''
+      const result = relay.replaySession(id)
+      res.writeHead(result.ok ? 200 : 404, { 'Content-Type': 'application/json' })
+      res.end(JSON.stringify(result))
+      return
+    }
+
     // Static files (UI)
     if (req.method === 'GET') {
       return serveStatic(req, res)

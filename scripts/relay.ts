@@ -18,7 +18,7 @@ import { CodexSessionWatcher } from '../extension/src/codex-session-watcher'
 import {
   INACTIVITY_TIMEOUT_MS, SCAN_INTERVAL_MS, ACTIVE_SESSION_AGE_S, POLL_FALLBACK_MS,
   SESSION_ID_DISPLAY, SYSTEM_PROMPT_BASE_TOKENS, ORCHESTRATOR_NAME,
-  HOOK_SERVER_NOT_STARTED, WORKSPACE_HASH_LENGTH,
+  HOOK_SERVER_NOT_STARTED, WORKSPACE_HASH_LENGTH, SYSTEM_CONTENT_PREFIXES,
 } from '../extension/src/constants'
 import { setLogLevel } from '../extension/src/logger'
 
@@ -321,6 +321,115 @@ function scanForActiveSessions(workspace: string) {
   }
 }
 
+// ─── Session history (time machine) ─────────────────────────────────────────
+
+const HISTORY_LIMIT = 100
+
+export interface HistorySession {
+  id: string
+  project?: string
+  label?: string
+  mtimeMs: number
+  watched: boolean
+}
+
+/** Preview label for a transcript: first real user message, truncated. */
+function readSessionLabel(filePath: string): string | undefined {
+  try {
+    const fd = fs.openSync(filePath, 'r')
+    const buf = Buffer.alloc(65536)
+    const n = fs.readSync(fd, buf, 0, 65536, 0)
+    fs.closeSync(fd)
+    for (const line of buf.toString('utf8', 0, n).split('\n').slice(0, 25)) {
+      try {
+        const entry = JSON.parse(line)
+        if (entry?.type !== 'user') continue
+        const content = entry.message?.content
+        let text = ''
+        if (typeof content === 'string') {
+          text = content
+        } else if (Array.isArray(content)) {
+          const block = content.find((b: unknown) =>
+            (b as { type?: string })?.type === 'text' && typeof (b as { text?: unknown }).text === 'string')
+          text = (block as { text?: string })?.text || ''
+        }
+        text = text.trim()
+        if (!text || SYSTEM_CONTENT_PREFIXES.some(p => text.startsWith(p))) continue
+        return text.length > 60 ? text.slice(0, 57) + '…' : text
+      } catch { /* malformed or truncated line — try the next */ }
+    }
+  } catch { /* unreadable file */ }
+  return undefined
+}
+
+/** Every transcript on disk (any project, any age), newest first. */
+function listHistorySessions(): HistorySession[] {
+  if (!fs.existsSync(CLAUDE_DIR)) return []
+  const found: Array<{ id: string; filePath: string; mtimeMs: number }> = []
+  let projectDirs: fs.Dirent[] = []
+  try { projectDirs = fs.readdirSync(CLAUDE_DIR, { withFileTypes: true }) } catch { return [] }
+  for (const dir of projectDirs) {
+    if (!dir.isDirectory()) continue
+    const dirPath = path.join(CLAUDE_DIR, dir.name)
+    let files: string[] = []
+    try { files = fs.readdirSync(dirPath) } catch { continue }
+    for (const file of files) {
+      if (!file.endsWith('.jsonl')) continue
+      const filePath = path.join(dirPath, file)
+      try {
+        const stat = fs.statSync(filePath)
+        if (stat.size === 0) continue
+        found.push({ id: path.basename(file, '.jsonl'), filePath, mtimeMs: stat.mtimeMs })
+      } catch { /* file vanished mid-scan */ }
+    }
+  }
+  found.sort((a, b) => b.mtimeMs - a.mtimeMs)
+  // Read labels/projects only for the entries we actually return
+  return found.slice(0, HISTORY_LIMIT).map(s => ({
+    id: s.id,
+    project: readProjectName(s.filePath),
+    label: readSessionLabel(s.filePath),
+    mtimeMs: s.mtimeMs,
+    watched: sessions.has(s.id),
+  }))
+}
+
+/** Attach a past session for replay via the normal watch machinery.
+ *  Stale sessions are immediately marked completed so tabs don't lie. */
+function replaySession(id: string): { ok: boolean; error?: string } {
+  if (!/^[\w-]+$/.test(id)) return { ok: false, error: 'invalid session id' }
+  if (sessions.has(id)) return { ok: true } // already live or replayed
+  if (!fs.existsSync(CLAUDE_DIR)) return { ok: false, error: 'no projects dir' }
+
+  let filePath: string | null = null
+  try {
+    for (const dir of fs.readdirSync(CLAUDE_DIR, { withFileTypes: true })) {
+      if (!dir.isDirectory()) continue
+      const candidate = path.join(CLAUDE_DIR, dir.name, `${id}.jsonl`)
+      if (fs.existsSync(candidate)) { filePath = candidate; break }
+    }
+  } catch { /* fall through to not-found */ }
+  if (!filePath) return { ok: false, error: 'session not found' }
+
+  const stat = fs.statSync(filePath)
+  watchSession(id, filePath)
+
+  const isStale = (Date.now() - stat.mtimeMs) / 1000 > ACTIVE_SESSION_AGE_S
+  if (isStale) {
+    const session = sessions.get(id)
+    if (session) {
+      session.sessionCompleted = true
+      if (session.inactivityTimer) { clearTimeout(session.inactivityTimer); session.inactivityTimer = null }
+      broadcastEvent({
+        time: elapsed(id), type: 'agent_complete',
+        payload: { name: ORCHESTRATOR_NAME }, sessionId: id,
+      })
+      broadcastSessionLifecycle('ended', id, session.label, session.project)
+    }
+  }
+  return { ok: true }
+}
+
 // ─── Discovery file ─────────────────────────────────────────────────────────
 
 function normalizePath(p: string): string {
@@ -355,6 +464,10 @@ function removeDiscoveryFile() {
 export interface Relay {
   /** Handle an incoming SSE connection */
   handleSSE: (req: http.IncomingMessage, res: http.ServerResponse) => void
+  /** List every transcript on disk (any project, any age), newest first */
+  listHistory: () => HistorySession[]
+  /** Attach a past session for replay; broadcasts its full event history */
+  replaySession: (id: string) => { ok: boolean; error?: string }
   /** Clean up all resources */
   dispose: () => void
 }
@@ -454,6 +567,9 @@ export async function createRelay(options: RelayOptions): Promise<Relay> {
   let relayDisposed = false
 
   return {
+    listHistory: listHistorySessions,
+    replaySession,
+
     handleSSE(req: http.IncomingMessage, res: http.ServerResponse) {
       res.writeHead(200, {
         'Content-Type': 'text/event-stream',

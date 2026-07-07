@@ -36,6 +36,20 @@ async function main() {
       return relay.handleSSE(req, res)
     }
 
+    if (req.url === '/sessions/history') {
+      res.writeHead(200, { 'Content-Type': 'application/json' })
+      res.end(JSON.stringify(relay.listHistory()))
+      return
+    }
+
+    if (req.url?.startsWith('/sessions/replay')) {
+      const id = new URL(req.url, 'http://localhost').searchParams.get('id') || ''
+      const result = relay.replaySession(id)
+      res.writeHead(result.ok ? 200 : 404, { 'Content-Type': 'application/json' })
+      res.end(JSON.stringify(result))
+      return
+    }
+
     res.writeHead(200, { 'Content-Type': 'text/plain' })
     res.end('Kirameki Dev Relay')
   })

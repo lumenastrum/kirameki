@@ -23,6 +23,7 @@ import { COLORS } from "@/lib/colors"
 import { MOCK_DURATION } from "@/lib/mock-scenario"
 import { MessageFeedPanel } from "./message-feed-panel"
 import { TopBar } from "./top-bar"
+import { HistoryPanel } from "./history-panel"
 import { useAudioEffects } from "@/hooks/use-audio-effects"
 import { usePermissionAlerts } from "@/hooks/use-permission-alerts"
 
@@ -70,6 +71,7 @@ export function AgentVisualizer() {
   const [showTimeline, setShowTimeline] = useState(false)
   const [showFileAttention, setShowFileAttention] = useState(false)
   const [showTranscript, setShowTranscript] = useState(false)
+  const [showHistory, setShowHistory] = useState(false)
 
   // Mutually exclusive panel toggling — opening one closes the others
   const toggleExclusivePanel = useCallback((panel: 'files' | 'transcript' | 'cost') => {
@@ -406,11 +408,18 @@ export function AgentVisualizer() {
         showTranscript={showTranscript}
         showCostOverlay={showCostOverlay}
         showTimeline={showTimeline}
+        showHistory={showHistory}
         isMuted={isMuted}
         onTogglePanel={toggleExclusivePanel}
         onToggleTimeline={() => setShowTimeline(prev => !prev)}
+        onToggleHistory={() => setShowHistory(prev => !prev)}
         onToggleMute={handleToggleMute}
       />
+
+      {/* Session history panel (time machine, standalone mode only) */}
+      {!bridge.isVSCode && (
+        <HistoryPanel visible={showHistory} onClose={() => setShowHistory(false)} />
+      )}
     </div>
     </OpenFileProvider>
   )
