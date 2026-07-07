@@ -4,6 +4,7 @@
  *
  * Usage:
  *   pnpm run dev -- --workspace "C:\path\to\project" --web-port 3333
+ *   pnpm run dev -- --all          # mission control: watch every workspace
  */
 'use strict'
 
@@ -23,6 +24,8 @@ function parseArgs(argv) {
     const arg = argv[i]
     if (arg === '--') {
       continue
+    } else if (arg === '--all' || arg === '-a') {
+      workspace = '*'
     } else if ((arg === '--workspace' || arg === '-w') && argv[i + 1]) {
       workspace = argv[i + 1]
       i++

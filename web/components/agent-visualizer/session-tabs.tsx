@@ -63,6 +63,14 @@ export function SessionTabs({
                 animation: hasActivity && !isSelected ? 'pulse 1.5s infinite' : 'none',
               }}
             />
+            {session.project && (
+              <span
+                className="flex-shrink-0"
+                style={{ color: COLORS.costText, fontSize: 9, opacity: 0.8 }}
+              >
+                {session.project}
+              </span>
+            )}
             {session.label}
             <span
               className="ml-0.5 opacity-0 group-hover:opacity-60 transition-opacity cursor-pointer"

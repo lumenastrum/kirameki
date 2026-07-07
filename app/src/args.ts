@@ -13,6 +13,8 @@ export function parseArgs(argv: string[]) {
       const n = parseInt(argv[i + 1], 10)
       if (!isNaN(n) && n > 0 && n < 65536) port = n
       i++
+    } else if (arg === '--all' || arg === '-a') {
+      workspace = '*'
     } else if ((arg === '--workspace' || arg === '-w') && argv[i + 1]) {
       workspace = argv[i + 1]
       i++
@@ -27,6 +29,7 @@ Usage: kirameki [options]
 Options:
   -p, --port <number>  Port for the server (default: ${DEFAULT_RELAY_PORT})
   -w, --workspace <dir> Workspace whose Claude/Codex sessions should be watched
+  -a, --all            Mission control: watch every workspace on this machine
   --no-open            Don't open the browser automatically
   -v, --verbose        Show detailed event logs
   -h, --help           Show this help message

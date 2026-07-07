@@ -34,6 +34,8 @@ export interface SessionInfo {
   status: 'active' | 'completed'
   startTime: number
   lastActivityTime: number
+  /** Project folder name (basename of the session's cwd) — set when watching all workspaces */
+  project?: string
 }
 
 // ─── Extension → Webview Messages ────────────────────────────────────────────
@@ -168,6 +170,8 @@ export interface SubagentState {
 export interface WatchedSession {
   sessionId: string
   filePath: string
+  /** Project folder name (basename of the session's cwd), if derivable */
+  project?: string
   fileWatcher: import('fs').FSWatcher | null
   pollTimer: NodeJS.Timeout | null
   fileSize: number

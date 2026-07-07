@@ -298,6 +298,9 @@ export class HookServer implements vscode.Disposable {
         agent: ORCHESTRATOR_NAME,
         message: payload.message || 'Permission needed',
         title: payload.title || 'Permission needed',
+        // Claude Code told us directly — this is a certain signal,
+        // safe for alarms (unlike the timing heuristic).
+        source: 'hook',
       },
     }, payload.session_id)
   }

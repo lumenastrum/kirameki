@@ -28,9 +28,32 @@ const CLAUDE_DIR = path.join(os.homedir(), '.claude', 'projects')
 
 let relayCreated = false
 let verbose = false
+/** Mission-control mode: watch every project under ~/.claude/projects.
+ *  Enabled by passing '*' as the workspace. */
+let watchAll = false
 
 function log(...args: unknown[]) {
   if (verbose) console.log(...args)
+}
+
+/** Derive a project tag from a transcript's early lines (first `cwd` field).
+ *  The opening lines can be queue-operation/summary entries without a cwd —
+ *  the first user/assistant entry carries it. */
+function readProjectName(filePath: string): string | undefined {
+  try {
+    const fd = fs.openSync(filePath, 'r')
+    const buf = Buffer.alloc(32768)
+    const n = fs.readSync(fd, buf, 0, 32768, 0)
+    fs.closeSync(fd)
+    const lines = buf.toString('utf8', 0, n).split('\n')
+    for (const line of lines.slice(0, 10)) {
+      try {
+        const cwd = JSON.parse(line)?.cwd
+        if (typeof cwd === 'string' && cwd) return path.basename(cwd)
+      } catch { /* truncated or malformed line — try the next */ }
+    }
+  } catch { /* unreadable file — no tag */ }
+  return undefined
 }
 
 // ─── SSE client management ──────────────────────────────────────────────────
@@ -71,11 +94,11 @@ function broadcastEvent(event: AgentEvent) {
   broadcast(JSON.stringify({ type: 'agent-event', event }))
 }
 
-function broadcastSessionLifecycle(type: 'started' | 'ended' | 'updated', sessionId: string, label: string) {
+function broadcastSessionLifecycle(type: 'started' | 'ended' | 'updated', sessionId: string, label: string, project?: string) {
   if (type === 'started') {
     broadcast(JSON.stringify({
       type: 'session-started',
-      session: { id: sessionId, label, status: 'active', startTime: Date.now(), lastActivityTime: Date.now() } as SessionInfo,
+      session: { id: sessionId, label, status: 'active', startTime: Date.now(), lastActivityTime: Date.now(), ...(project ? { project } : {}) } as SessionInfo,
     }))
   } else if (type === 'ended') {
     broadcast(JSON.stringify({ type: 'session-ended', sessionId }))
@@ -142,7 +165,7 @@ function resetInactivityTimer(sessionId: string) {
       payload: { name: ORCHESTRATOR_NAME, isMain: true, task: session.label, ...(session.model ? { model: session.model } : {}) },
       sessionId,
     })
-    broadcastSessionLifecycle('started', sessionId, session.label)
+    broadcastSessionLifecycle('started', sessionId, session.label, session.project)
   }
 
   if (session.inactivityTimer) clearTimeout(session.inactivityTimer)
@@ -165,6 +188,7 @@ function watchSession(sessionId: string, filePath: string) {
   const defaultLabel = `Session ${sessionId.slice(0, SESSION_ID_DISPLAY)}`
   const session: WatchedSession = {
     sessionId, filePath,
+    project: readProjectName(filePath),
     fileWatcher: null, pollTimer: null, fileSize: 0,
     sessionStartTime: Date.now(),
     pendingToolCalls: new Map(),
@@ -189,7 +213,7 @@ function watchSession(sessionId: string, filePath: string) {
   session.fileSize = stat.size
   parser.extractSessionLabel(catchUpEntries, session)
 
-  broadcastSessionLifecycle('started', sessionId, session.label)
+  broadcastSessionLifecycle('started', sessionId, session.label, session.project)
   broadcastEvent({
     time: 0, type: 'agent_spawn',
     payload: { name: ORCHESTRATOR_NAME, isMain: true, task: session.label, ...(session.model ? { model: session.model } : {}) },
@@ -240,24 +264,33 @@ function readNewLines(sessionId: string) {
 function scanForActiveSessions(workspace: string) {
   if (!fs.existsSync(CLAUDE_DIR)) return
 
-  let resolved = workspace
-  try { resolved = fs.realpathSync(resolved) } catch {}
-  const encoded = resolved.replace(/[^a-zA-Z0-9]/g, '-')
-
   const dirsToScan: string[] = []
-  const projectDir = path.join(CLAUDE_DIR, encoded)
-  if (fs.existsSync(projectDir)) dirsToScan.push(projectDir)
-
-  try {
-    for (const dir of fs.readdirSync(CLAUDE_DIR, { withFileTypes: true })) {
-      if (!dir.isDirectory()) continue
-      const fullPath = path.join(CLAUDE_DIR, dir.name)
-      if (fullPath === projectDir) continue
-      if (dir.name.startsWith(encoded + '-')) {
-        dirsToScan.push(fullPath)
+  if (watchAll) {
+    // Mission control: every project directory is fair game
+    try {
+      for (const dir of fs.readdirSync(CLAUDE_DIR, { withFileTypes: true })) {
+        if (dir.isDirectory()) dirsToScan.push(path.join(CLAUDE_DIR, dir.name))
       }
-    }
-  } catch {}
+    } catch {}
+  } else {
+    let resolved = workspace
+    try { resolved = fs.realpathSync(resolved) } catch {}
+    const encoded = resolved.replace(/[^a-zA-Z0-9]/g, '-')
+
+    const projectDir = path.join(CLAUDE_DIR, encoded)
+    if (fs.existsSync(projectDir)) dirsToScan.push(projectDir)
+
+    try {
+      for (const dir of fs.readdirSync(CLAUDE_DIR, { withFileTypes: true })) {
+        if (!dir.isDirectory()) continue
+        const fullPath = path.join(CLAUDE_DIR, dir.name)
+        if (fullPath === projectDir) continue
+        if (dir.name.startsWith(encoded + '-')) {
+          dirsToScan.push(fullPath)
+        }
+      }
+    } catch {}
+  }
 
   for (const dirPath of dirsToScan) {
     try {
@@ -304,9 +337,11 @@ let discoveryFilePath: string | null = null
 
 function writeDiscoveryFile(port: number, workspace: string) {
   if (!fs.existsSync(DISCOVERY_DIR)) fs.mkdirSync(DISCOVERY_DIR, { recursive: true })
-  const hash = hashWorkspace(workspace)
+  // '*' is a literal match-all sentinel for the hook forwarder — never path-resolve it
+  const wsOut = watchAll ? '*' : normalizePath(workspace)
+  const hash = crypto.createHash('sha256').update(wsOut).digest('hex').slice(0, WORKSPACE_HASH_LENGTH)
   discoveryFilePath = path.join(DISCOVERY_DIR, `${hash}-${process.pid}.json`)
-  fs.writeFileSync(discoveryFilePath, JSON.stringify({ port, pid: process.pid, workspace: normalizePath(workspace) }, null, 2) + '\n')
+  fs.writeFileSync(discoveryFilePath, JSON.stringify({ port, pid: process.pid, workspace: wsOut }, null, 2) + '\n')
 }
 
 function removeDiscoveryFile() {
@@ -344,11 +379,13 @@ function resolveRuntimeMode(explicit?: RelayRuntimeMode): RelayRuntimeMode {
 export async function createRelay(options: RelayOptions): Promise<Relay> {
   const { workspace } = options
   verbose = options.verbose ?? false
+  watchAll = workspace === '*'
   if (!verbose) setLogLevel('error')
   if (relayCreated) {
     throw new Error('createRelay() can only be called once per process')
   }
   relayCreated = true
+  if (watchAll) log('[relay] Mission control: watching ALL workspaces under ~/.claude/projects')
 
   const mode = resolveRuntimeMode(options.runtime)
   const wantClaude = mode === 'claude' || mode === 'auto'
@@ -375,15 +412,26 @@ export async function createRelay(options: RelayOptions): Promise<Relay> {
     scanForActiveSessions(workspace)
     scanInterval = setInterval(() => scanForActiveSessions(workspace), SCAN_INTERVAL_MS)
 
-    const resolved = (() => { try { return fs.realpathSync(workspace) } catch { return workspace } })()
-    const encoded = resolved.replace(/[^a-zA-Z0-9]/g, '-')
-    const projectDir = path.join(CLAUDE_DIR, encoded)
-    if (fs.existsSync(projectDir)) {
-      try {
-        projectDirWatcher = fs.watch(projectDir, (_eventType, filename) => {
-          if (filename?.endsWith('.jsonl')) scanForActiveSessions(workspace)
-        })
-      } catch {}
+    if (watchAll) {
+      // Watch the projects root — new project dirs appear when a session
+      // starts in a never-before-seen workspace. Per-file changes inside
+      // existing dirs are covered by the 1s scan interval.
+      if (fs.existsSync(CLAUDE_DIR)) {
+        try {
+          projectDirWatcher = fs.watch(CLAUDE_DIR, () => scanForActiveSessions(workspace))
+        } catch {}
+      }
+    } else {
+      const resolved = (() => { try { return fs.realpathSync(workspace) } catch { return workspace } })()
+      const encoded = resolved.replace(/[^a-zA-Z0-9]/g, '-')
+      const projectDir = path.join(CLAUDE_DIR, encoded)
+      if (fs.existsSync(projectDir)) {
+        try {
+          projectDirWatcher = fs.watch(projectDir, (_eventType, filename) => {
+            if (filename?.endsWith('.jsonl')) scanForActiveSessions(workspace)
+          })
+        } catch {}
+      }
     }
   }
 
@@ -429,6 +477,7 @@ export async function createRelay(options: RelayOptions): Promise<Relay> {
           id: session.sessionId, label: session.label,
           status: session.sessionCompleted ? 'completed' : 'active',
           startTime: session.sessionStartTime, lastActivityTime: session.lastActivityTime,
+          ...(session.project ? { project: session.project } : {}),
         })
       }
       if (codexWatcher) sessionList.push(...codexWatcher.getActiveSessions())

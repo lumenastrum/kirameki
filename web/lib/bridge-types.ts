@@ -19,6 +19,8 @@ export interface SessionInfo {
   status: 'active' | 'completed'
   startTime: number
   lastActivityTime: number
+  /** Project folder name (basename of the session's cwd) — set when watching all workspaces */
+  project?: string
 }
 
 export type ConnectionStatus = 'connected' | 'disconnected' | 'watching'

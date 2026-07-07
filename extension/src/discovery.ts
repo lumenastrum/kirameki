@@ -143,13 +143,14 @@ function ensureDir(): void {
 
 function getHookScriptContent(): string {
   return `#!/usr/bin/env node
-// Kirameki hook forwarder v3 — installed by the Kirameki VS Code extension.
+// Kirameki hook forwarder v4 — installed by the Kirameki VS Code extension.
 // Claude Code invokes this as a command hook. It reads a discovery directory to
 // find live extension instances, checks their PIDs, and forwards the event via
 // HTTP POST. Dead instances are cleaned up automatically.
 //
 // v3: containment-based workspace matching (supports subdirectory CWD),
 //     realpathSync normalization (handles symlinks), Windows-safe PID checks.
+// v4: '*' workspace sentinel — mission-control instances receive all events.
 //
 // Discovery dir: ~/.claude/kirameki/
 // Discovery file: {workspace-hash}-{pid}.json  →  { port, pid, workspace }
@@ -201,7 +202,9 @@ process.stdin.on('end', () => {
 
   // Parse discovery files and find workspaces that contain this cwd.
   // Use longest-match-wins so /project/sub matches before /project.
+  // A workspace of '*' is a mission-control instance that receives everything.
   const matches = [];
+  const starTargets = [];
   for (const file of allFiles) {
     let d;
     try { d = JSON.parse(fs.readFileSync(path.join(DIR, file), 'utf8')); } catch { continue; }
@@ -213,6 +216,8 @@ process.stdin.on('end', () => {
       continue;
     }
 
+    if (d.workspace === '*') { starTargets.push({ d, file }); continue; }
+
     // Containment check: is cwd equal to or under this workspace?
     const ws = normPath(d.workspace);
     if (resolvedCwd === ws || resolvedCwd.startsWith(ws + path.sep)) {
@@ -220,13 +225,16 @@ process.stdin.on('end', () => {
     }
   }
 
-  if (!matches.length) process.exit(0);
-
-  // Sort by workspace path length descending — most specific match first
-  matches.sort((a, b) => b.wsLen - a.wsLen);
-  const bestLen = matches[0].wsLen;
-  // Forward to all instances of the best (most specific) workspace match
-  const targets = matches.filter(m => m.wsLen === bestLen);
+  let targets = starTargets;
+  if (matches.length) {
+    // Sort by workspace path length descending — most specific match first
+    matches.sort((a, b) => b.wsLen - a.wsLen);
+    const bestLen = matches[0].wsLen;
+    // Forward to the best (most specific) workspace match, plus every
+    // mission-control instance
+    targets = targets.concat(matches.filter(m => m.wsLen === bestLen));
+  }
+  if (!targets.length) process.exit(0);
 
   let pending = targets.length;
   for (const { d } of targets) {

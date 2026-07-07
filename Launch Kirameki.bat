@@ -13,13 +13,12 @@ if exist "%BUNDLED_NODE%\node.exe" (
 
 cd /d "%ROOT%"
 
-set "KIRAMEKI_WORKSPACE=%WORKSPACE%"
+set "KIRAMEKI_WORKSPACE=*"
 set "KIRAMEKI_WEB_PORT=%WEB_PORT%"
 
-echo Starting Kirameki
+echo Starting Kirameki (mission control: all workspaces)
 echo UI:        http://localhost:%WEB_PORT%
 echo Relay:     http://127.0.0.1:3001/events
-echo Workspace: %WORKSPACE%
 echo.
 
 corepack pnpm run dev

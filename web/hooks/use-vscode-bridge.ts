@@ -132,9 +132,12 @@ export function useVSCodeBridge(): BridgeHookResult {
       // Track permission-wait per session, across ALL sessions. A session
       // blocked on a permission prompt emits nothing (Claude Code is frozen),
       // so any subsequent event from it means the prompt was resolved.
+      // Only hook-sourced events arm the alarm — the relay's timing heuristic
+      // fires on any slow tool call and would cause alert fatigue.
       if (event.sessionId) {
         const sid = event.sessionId
-        if (event.type === 'permission_requested') {
+        if (event.type === 'permission_requested'
+            && (event.payload as { source?: string } | undefined)?.source === 'hook') {
           setSessionsAwaitingPermission(prev => {
             if (prev.has(sid)) return prev
             const next = new Set(prev)

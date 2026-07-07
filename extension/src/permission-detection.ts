@@ -77,6 +77,10 @@ export function handlePermissionDetection(
         payload: {
           agent: agentName,
           message: 'Waiting for permission',
+          // Timing-based guess — a slow tool call looks identical to a real
+          // permission prompt. Consumers that alarm (title flash, chime)
+          // should ignore heuristic events and trust only source: 'hook'.
+          source: 'heuristic',
         },
       }, sessionId)
     }, PERMISSION_DETECT_MS)
