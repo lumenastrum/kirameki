@@ -74,7 +74,10 @@ export function handleContextUpdate(
   if (agent) {
     state.agents.set(agentName, {
       ...agent,
-      tokensUsed: tokens,
+      // Once real usage data flows (usage_update), estimates stop
+      // overwriting the token count — the breakdown still updates so
+      // the bar's segment proportions stay live.
+      tokensUsed: agent.hasRealUsage ? agent.tokensUsed : tokens,
       tokensMax: tokensMaxOverride ?? agent.tokensMax,
       contextBreakdown: breakdown || agent.contextBreakdown,
       state: agent.state === 'complete' ? 'complete' : 'thinking'

@@ -8,6 +8,11 @@ export function agentCost(tokensUsed: number): number {
   return (tokensUsed / 1_000_000) * COST_RATE
 }
 
+/** Real relay-computed cost when available, blended heuristic otherwise. */
+export function agentCostReal(agent: Pick<Agent, 'costUsd' | 'tokensUsed'>): number {
+  return agent.costUsd ?? agentCost(agent.tokensUsed)
+}
+
 /** Tool name -> color for mini cost bar */
 export function toolTypeColor(toolName: string): string {
   const n = toolName.toLowerCase()
@@ -38,7 +43,7 @@ export function drawCostLabels(
 
   for (const [, agent] of agents) {
     if (agent.opacity < MIN_VISIBLE_OPACITY) continue
-    const cost = agentCost(agent.tokensUsed)
+    const cost = agentCostReal(agent)
     if (cost < COST_DRAW.minDisplayCost) continue
 
     const r = agent.isMain ? NODE.radiusMain : NODE.radiusSub
@@ -127,7 +132,7 @@ export function drawCostSummaryPanel(
 
   // Per-agent breakdown sorted by cost desc
   const agentBreakdown = agentList
-    .map(a => ({ name: a.name, tokens: a.tokensUsed, cost: agentCost(a.tokensUsed) }))
+    .map(a => ({ name: a.name, tokens: a.tokensUsed, cost: agentCostReal(a) }))
     .sort((a, b) => b.cost - a.cost)
 
   // Per-tool-type breakdown

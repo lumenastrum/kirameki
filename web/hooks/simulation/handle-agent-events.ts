@@ -179,6 +179,23 @@ export function handleAgentIdle(
   }
 }
 
+export function handleUsageUpdate(
+  payload: Record<string, unknown>,
+  state: MutableEventState,
+): void {
+  const agentName = asString(payload.agent)
+  const agent = state.agents.get(agentName)
+  if (!agent) return
+  const contextTokens = typeof payload.contextTokens === 'number' ? payload.contextTokens : undefined
+  const costUsd = typeof payload.costUsd === 'number' ? payload.costUsd : undefined
+  state.agents.set(agentName, {
+    ...agent,
+    hasRealUsage: true,
+    ...(contextTokens !== undefined ? { tokensUsed: contextTokens } : {}),
+    ...(costUsd !== undefined ? { costUsd } : {}),
+  })
+}
+
 export function handleModelDetected(
   payload: Record<string, unknown>,
   state: MutableEventState,

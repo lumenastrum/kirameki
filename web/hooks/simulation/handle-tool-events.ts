@@ -113,7 +113,8 @@ export function handleToolCallEnd(
       ...agent,
       state: isError ? 'error' : 'thinking',
       currentTool: undefined,
-      tokensUsed: agent.tokensUsed + (tokenCost ?? 0),
+      // Estimated per-tool increments stop once real usage data flows
+      tokensUsed: agent.hasRealUsage ? agent.tokensUsed : agent.tokensUsed + (tokenCost ?? 0),
     })
 
     const toolState: 'error' | 'complete' = isError ? 'error' : 'complete'

@@ -19,6 +19,7 @@ export type AgentEventType =
   | 'subagent_dispatch'
   | 'subagent_return'
   | 'permission_requested'
+  | 'usage_update'
   | 'error'
 
 export interface AgentEvent {
@@ -195,6 +196,10 @@ export interface WatchedSession {
   model: string | null
   permissionTimer: NodeJS.Timeout | null
   permissionEmitted: boolean
+  /** Real usage accounting from transcript usage fields (deduped by message id) */
+  usageCostByMsg?: Map<string, number>
+  costUsd?: number
+  actualContextTokens?: number
   contextBreakdown: {
     systemPrompt: number
     userMessages: number

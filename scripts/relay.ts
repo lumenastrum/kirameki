@@ -21,6 +21,7 @@ import {
   HOOK_SERVER_NOT_STARTED, WORKSPACE_HASH_LENGTH, SYSTEM_CONTENT_PREFIXES,
 } from '../extension/src/constants'
 import { setLogLevel } from '../extension/src/logger'
+import { costOfUsage, contextTokensOfUsage, type TranscriptUsage } from '../extension/src/pricing'
 
 const MAX_EVENT_BUFFER = 5000
 const DISCOVERY_DIR = path.join(os.homedir(), '.claude', 'kirameki')
@@ -134,6 +135,53 @@ function emitEvent(event: AgentEvent, sessionId?: string) {
   broadcastEvent(sessionId ? { ...event, sessionId } : event)
 }
 
+// ─── Real usage accounting ──────────────────────────────────────────────────
+// Assistant entries carry message.usage; Claude Code writes several rows per
+// message (one per content block) repeating the same usage, so cost is
+// deduped by message.id — naive summing overcounts ~3x (measured).
+
+interface UsageEntry {
+  type?: string
+  message?: { id?: string; model?: string; usage?: TranscriptUsage }
+}
+
+/** Fold one parsed transcript entry into the session's usage totals. */
+function noteUsage(session: WatchedSession, entry: UsageEntry): boolean {
+  if (entry?.type !== 'assistant') return false
+  const msg = entry.message
+  if (!msg?.usage || !msg.id) return false
+
+  if (!session.usageCostByMsg) session.usageCostByMsg = new Map()
+  const cost = costOfUsage(msg.usage, msg.model, Date.now())
+  const prev = session.usageCostByMsg.get(msg.id)
+  let changed = false
+  if (prev !== cost) {
+    session.costUsd = (session.costUsd ?? 0) - (prev ?? 0) + cost
+    session.usageCostByMsg.set(msg.id, cost)
+    changed = true
+  }
+  const context = contextTokensOfUsage(msg.usage)
+  if (context > 0 && context !== session.actualContextTokens) {
+    session.actualContextTokens = context
+    changed = true
+  }
+  return changed
+}
+
+function emitUsageUpdate(session: WatchedSession, sessionId: string) {
+  if (session.costUsd === undefined && session.actualContextTokens === undefined) return
+  broadcastEvent({
+    time: elapsed(sessionId),
+    type: 'usage_update',
+    payload: {
+      agent: ORCHESTRATOR_NAME,
+      contextTokens: session.actualContextTokens,
+      costUsd: session.costUsd,
+    },
+    sessionId,
+  })
+}
+
 const parser = new TranscriptParser({
   emit: emitEvent,
   elapsed,
@@ -224,6 +272,13 @@ function watchSession(sessionId: string, filePath: string) {
   emitContextUpdate(ORCHESTRATOR_NAME, session, sessionId)
   parser.emitCatchUpEntries(catchUpEntries, session, sessionId)
 
+  // Fold real usage out of the caught-up entries, then broadcast once
+  let usageChanged = false
+  for (const entry of catchUpEntries as unknown as UsageEntry[]) {
+    if (noteUsage(session, entry)) usageChanged = true
+  }
+  if (usageChanged) emitUsageUpdate(session, sessionId)
+
   session.fileWatcher = fs.watch(filePath, (eventType) => {
     if (eventType === 'change') readNewLines(sessionId)
   })
@@ -250,9 +305,14 @@ function readNewLines(sessionId: string) {
   const result = readNewFileLines(session.filePath, session.fileSize)
   if (!result) return
   session.fileSize = result.newSize
+  let usageChanged = false
   for (const line of result.lines) {
     parser.processTranscriptLine(line, ORCHESTRATOR_NAME, session.pendingToolCalls, session.seenToolUseIds, sessionId, session.seenMessageHashes)
+    try {
+      if (noteUsage(session, JSON.parse(line))) usageChanged = true
+    } catch { /* partial or malformed line — parser handles its own buffering */ }
   }
+  if (usageChanged) emitUsageUpdate(session, sessionId)
 
   handlePermissionDetection(watcherDelegate, ORCHESTRATOR_NAME, session.pendingToolCalls, session, sessionId, session.sessionCompleted, true)
   scanSubagentsDir(watcherDelegate, parser, sessionId)

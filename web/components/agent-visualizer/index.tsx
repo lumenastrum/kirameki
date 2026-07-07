@@ -211,6 +211,17 @@ export function AgentVisualizer() {
     return sum
   }, [agents])
 
+  // Real session cost when the relay has usage data; undefined falls back to
+  // the blended heuristic in the top bar.
+  const totalCost = useMemo(() => {
+    let sum = 0
+    let hasReal = false
+    for (const a of agents.values()) {
+      if (a.costUsd !== undefined) { sum += a.costUsd; hasReal = true }
+    }
+    return hasReal ? sum : undefined
+  }, [agents])
+
   const selectedAgent = selection.selectedAgentId ? agents.get(selection.selectedAgentId) : null
   const selectedConversation = selection.selectedAgentId ? (conversations.get(selection.selectedAgentId) || []) : []
 
@@ -404,6 +415,7 @@ export function AgentVisualizer() {
         connectionStatus={bridge.connectionStatus}
         agentCount={agents.size}
         totalTokens={totalTokens}
+        totalCost={totalCost}
         showFileAttention={showFileAttention}
         showTranscript={showTranscript}
         showCostOverlay={showCostOverlay}

@@ -33,6 +33,10 @@ export interface Agent {
   runtime?: 'claude' | 'codex'
   currentTool?: string
   task?: string
+  /** Real cumulative $ cost from transcript usage fields (relay-computed, deduped by message id) */
+  costUsd?: number
+  /** True once real usage data has arrived — estimated context updates stop overwriting tokensUsed */
+  hasRealUsage?: boolean
   spawnTime: number
   completeTime?: number
   opacity: number
@@ -158,6 +162,7 @@ export interface SimulationEvent {
     | 'subagent_dispatch'
     | 'subagent_return'
     | 'permission_requested'
+    | 'usage_update'
   payload: Record<string, unknown>
   sessionId?: string
 }

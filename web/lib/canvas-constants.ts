@@ -3,6 +3,7 @@
 /** Context window size by model family. Patterns are checked in order;
  *  first match wins. Matched against lower-cased model IDs. */
 export const MODEL_FAMILY_CONTEXT: ReadonlyArray<{ pattern: RegExp; size: number }> = [
+  { pattern: /fable|mythos/, size: 1_000_000 },
   { pattern: /(opus|sonnet)-\d/, size: 1_000_000 },
   { pattern: /haiku-\d/, size: 200_000 },
 ]

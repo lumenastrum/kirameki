@@ -89,6 +89,8 @@ export interface TopBarProps {
   // Stats
   agentCount: number
   totalTokens: number
+  /** Real session cost from transcript usage — shown without the ~ when present */
+  totalCost?: number
   // Panel toggles
   showFileAttention: boolean
   showTranscript: boolean
@@ -106,7 +108,7 @@ export const TopBar = memo(function TopBar({
   sessions, selectedSessionId, sessionsWithActivity,
   onSelectSession, onCloseSession,
   isVSCode, connectionStatus,
-  agentCount, totalTokens,
+  agentCount, totalTokens, totalCost,
   showFileAttention, showTranscript, showCostOverlay, showTimeline, showHistory, isMuted,
   onTogglePanel, onToggleTimeline, onToggleHistory, onToggleMute,
 }: TopBarProps) {
@@ -134,8 +136,10 @@ export const TopBar = memo(function TopBar({
         <span>{agentCount} agents</span>
         <span>
           {formatTokens(totalTokens)} tokens
-          <span style={{ color: COLORS.complete + '65', marginLeft: 4 }}>
-            ~${agentCost(totalTokens).toFixed(2)}
+          <span style={{ color: COLORS.costText + '90', marginLeft: 4 }}>
+            {totalCost !== undefined
+              ? `$${totalCost.toFixed(2)}`
+              : `~$${agentCost(totalTokens).toFixed(2)}`}
           </span>
         </span>
 
