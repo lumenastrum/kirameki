@@ -1,73 +1,74 @@
 /**
- * Holographic color palette and role color definitions.
+ * Kirameki palette — gyaru pink & gold on a dark plum void.
  *
- * Extracted from agent-types.ts to keep that file focused on type definitions.
+ * Hue roles: pink = the agent (primary hologram), gold = the user and tools,
+ * purple = thinking/dispatch, mint = success/returns, red = errors.
  * All colors are re-exported from agent-types.ts for backward compatibility.
  */
 
 import type { AgentState, ContextBreakdown } from './agent-types'
 
-// Holographic Color Palette
+// Kirameki Color Palette
 export const COLORS = {
   // Background
-  void: '#050510',
-  hexGrid: '#0d0d1f',
+  void: '#0f0510',
+  hexGrid: '#1d0d1a',
 
   // Primary Hologram
-  holoBase: '#66ccff',
-  holoBright: '#aaeeff',
+  holoBase: '#ff66cc',
+  holoBright: '#ffaadd',
   holoHot: '#ffffff',
 
   // Agent States
-  idle: '#66ccff',
-  thinking: '#66ccff',
-  tool_calling: '#ffbb44',
+  idle: '#ff66cc',
+  thinking: '#ff66cc',
+  tool_calling: '#ffd24d',
   complete: '#66ffaa',
   error: '#ff5566',
-  paused: '#888899',
+  paused: '#998895',
   waiting_permission: '#ffaa33',
 
   // Edge/Particle Colors
   dispatch: '#cc88ff',
   return: '#66ffaa',
-  tool: '#ffbb44',
-  message: '#66ccff',
+  tool: '#ffd24d',
+  message: '#ff66cc',
 
   // Context breakdown colors
-  contextSystem: '#555577',     // gray-blue — fixed overhead
-  contextUser: '#66ccff',       // blue — user input
-  contextToolResults: '#ffbb44', // amber — expensive!
-  contextReasoning: '#cc88ff',  // purple — agent thinking
-  contextSubagent: '#66ffaa',   // green — child agent results
+  contextSystem: '#665577',      // gray-plum — fixed overhead
+  contextUser: '#ff66cc',        // pink — user input
+  contextToolResults: '#ffd24d', // gold — expensive!
+  contextReasoning: '#cc88ff',   // purple — agent thinking
+  contextSubagent: '#66ffaa',    // mint — child agent results
 
   // UI Chrome
-  nodeInterior: 'rgba(10, 15, 40, 0.5)',
-  textPrimary: '#aaeeff',
-  textDim: '#66ccff90',
-  textMuted: '#66ccff50',
+  nodeInterior: 'rgba(40, 10, 32, 0.5)',
+  textPrimary: '#ffd9ee',
+  textDim: '#ff66cc90',
+  textMuted: '#ff66cc50',
 
   // Glass card
-  glassBg: 'rgba(10, 15, 30, 0.7)',
-  glassBorder: 'rgba(100, 200, 255, 0.15)',
-  glassHighlight: 'rgba(100, 200, 255, 0.08)',
+  glassBg: 'rgba(30, 10, 24, 0.7)',
+  glassBorder: 'rgba(255, 150, 215, 0.15)',
+  glassHighlight: 'rgba(255, 150, 215, 0.08)',
 
   // Holo background/border opacities (avoids scattered rgba literals)
-  holoBg03: 'rgba(100, 200, 255, 0.03)',
-  holoBg05: 'rgba(100, 200, 255, 0.05)',
-  holoBg10: 'rgba(100, 200, 255, 0.1)',
-  holoBorder06: 'rgba(100, 200, 255, 0.06)',
-  holoBorder08: 'rgba(100, 200, 255, 0.08)',
-  holoBorder10: 'rgba(100, 200, 255, 0.1)',
-  holoBorder12: 'rgba(100, 200, 255, 0.12)',
+  holoBg03: 'rgba(255, 150, 215, 0.03)',
+  holoBg05: 'rgba(255, 150, 215, 0.05)',
+  holoBg10: 'rgba(255, 150, 215, 0.1)',
+  holoBorder06: 'rgba(255, 150, 215, 0.06)',
+  holoBorder08: 'rgba(255, 150, 215, 0.08)',
+  holoBorder10: 'rgba(255, 150, 215, 0.1)',
+  holoBorder12: 'rgba(255, 150, 215, 0.12)',
 
   // Panel chrome
-  panelBg: 'rgba(8, 12, 24, 0.85)',
-  panelSeparator: 'rgba(100, 200, 255, 0.04)',
+  panelBg: 'rgba(26, 8, 20, 0.85)',
+  panelSeparator: 'rgba(255, 150, 215, 0.04)',
 
   // Toggle button states
-  toggleActive: 'rgba(100, 200, 255, 0.15)',
-  toggleInactive: 'rgba(100, 200, 255, 0.05)',
-  toggleBorder: 'rgba(100, 200, 255, 0.1)',
+  toggleActive: 'rgba(255, 150, 215, 0.15)',
+  toggleInactive: 'rgba(255, 150, 215, 0.05)',
+  toggleBorder: 'rgba(255, 150, 215, 0.1)',
 
   // Live indicator
   liveDot: '#ff4444',
@@ -76,28 +77,28 @@ export const COLORS = {
   liveResumeBorder: 'rgba(255, 68, 68, 0.35)',
 
   // Discovery type colors
-  discoveryFile: '#66ccff',
+  discoveryFile: '#ff66cc',
   discoveryPattern: '#cc88ff',
   discoveryFinding: '#66ffaa',
-  discoveryCode: '#ffbb44',
+  discoveryCode: '#ffd24d',
 
   // Session tab states
-  tabSelectedBg: 'rgba(100, 200, 255, 0.15)',
-  tabInactiveBg: 'rgba(100, 200, 255, 0.03)',
-  tabSelectedBorder: 'rgba(100, 200, 255, 0.3)',
-  tabInactiveBorder: 'rgba(100, 200, 255, 0.08)',
+  tabSelectedBg: 'rgba(255, 150, 215, 0.15)',
+  tabInactiveBg: 'rgba(255, 150, 215, 0.03)',
+  tabSelectedBorder: 'rgba(255, 150, 215, 0.3)',
+  tabInactiveBorder: 'rgba(255, 150, 215, 0.08)',
   tabClose: '#ff6688',
 
   // Role colors (message bubbles)
-  roleAssistantBg: 'rgba(80, 160, 220, 0.12)',
-  roleAssistantBgSelected: 'rgba(80, 160, 220, 0.2)',
-  roleAssistantText: '#a0d4f0',
+  roleAssistantBg: 'rgba(240, 100, 190, 0.12)',
+  roleAssistantBgSelected: 'rgba(240, 100, 190, 0.2)',
+  roleAssistantText: '#ffb3e0',
   roleThinkingBg: 'rgba(140, 100, 200, 0.12)',
   roleThinkingBgSelected: 'rgba(140, 100, 200, 0.2)',
   roleThinkingText: '#c0a0e0',
-  roleUserBg: 'rgba(200, 160, 80, 0.12)',
-  roleUserBgSelected: 'rgba(200, 160, 80, 0.2)',
-  roleUserText: '#e0c888',
+  roleUserBg: 'rgba(220, 170, 70, 0.12)',
+  roleUserBgSelected: 'rgba(220, 170, 70, 0.2)',
+  roleUserText: '#f0d090',
 
   // Result/success
   resultBg: 'rgba(102, 255, 170, 0.05)',
@@ -107,63 +108,63 @@ export const COLORS = {
   unreadDot: '#ff6666',
 
   // Play button
-  playBtnBg: 'rgba(102, 204, 255, 0.12)',
-  playBtnActiveBg: 'rgba(102, 204, 255, 0.2)',
-  playBtnBorder: 'rgba(102, 204, 255, 0.4)',
-  playBtnGlow: '0 0 12px rgba(102, 204, 255, 0.15)',
+  playBtnBg: 'rgba(255, 102, 204, 0.12)',
+  playBtnActiveBg: 'rgba(255, 102, 204, 0.2)',
+  playBtnBorder: 'rgba(255, 102, 204, 0.4)',
+  playBtnGlow: '0 0 12px rgba(255, 102, 204, 0.15)',
 
   // Scrubber
-  scrubberFill: 'linear-gradient(90deg, rgba(102,204,255,0.3), rgba(102,204,255,0.6))',
-  scrubberHeadGlow: '0 0 10px rgba(102, 204, 255, 0.6), 0 0 20px rgba(102, 204, 255, 0.2)',
-  reviewBtnBorder: 'rgba(102, 204, 255, 0.25)',
+  scrubberFill: 'linear-gradient(90deg, rgba(255,102,204,0.3), rgba(255,102,204,0.6))',
+  scrubberHeadGlow: '0 0 10px rgba(255, 102, 204, 0.6), 0 0 20px rgba(255, 102, 204, 0.2)',
+  reviewBtnBorder: 'rgba(255, 102, 204, 0.25)',
 
   // Cost overlay
-  costActiveBg: 'rgba(102, 255, 170, 0.15)',
+  costActiveBg: 'rgba(255, 210, 77, 0.15)',
 
   // Canvas drawing — bubble base colors (partial rgba, alpha appended at draw time)
   bubbleThinkingBase: 'rgba(140, 100, 200,',
-  bubbleUserBase: 'rgba(200, 160, 80,',
-  bubbleAssistantBase: 'rgba(80, 160, 220,',
+  bubbleUserBase: 'rgba(220, 170, 70,',
+  bubbleAssistantBase: 'rgba(240, 100, 190,',
 
   // Canvas drawing — tool card backgrounds (partial rgba, alpha appended at draw time)
   toolCardErrorBase: 'rgba(40, 10, 15,',
-  toolCardSelectedBase: 'rgba(100, 200, 255,',
-  toolCardBase: 'rgba(10, 15, 30,',
+  toolCardSelectedBase: 'rgba(255, 150, 215,',
+  toolCardBase: 'rgba(30, 10, 24,',
 
   // Canvas drawing — agent/tool card backgrounds
-  cardBgDark: 'rgba(5, 5, 16, 0.8)',
-  cardBg: 'rgba(10, 15, 30, 0.6)',
-  cardBgSelected: 'rgba(10, 15, 30, 0.8)',
+  cardBgDark: 'rgba(15, 5, 16, 0.8)',
+  cardBg: 'rgba(30, 10, 24, 0.6)',
+  cardBgSelected: 'rgba(30, 10, 24, 0.8)',
   cardBgError: 'rgba(40, 10, 15, 0.8)',
-  cardBgSelectedHolo: 'rgba(100, 200, 255, 0.15)',
+  cardBgSelectedHolo: 'rgba(255, 150, 215, 0.15)',
   cardBgFaintOverlay: 'rgba(0, 0, 0, 0.01)',
 
   // Active tool indicator (detail card)
-  toolIndicatorBg: 'rgba(255, 187, 68, 0.1)',
-  toolIndicatorBorder: 'rgba(255, 187, 68, 0.2)',
-  toolIndicatorText: '#ffbb44',
+  toolIndicatorBg: 'rgba(255, 210, 77, 0.1)',
+  toolIndicatorBorder: 'rgba(255, 210, 77, 0.2)',
+  toolIndicatorText: '#ffd24d',
 
-  // Canvas drawing — cost labels
-  costText: '#66ffaa',
-  costTextDim: '#66ffaa80',
-  costPillBg: 'rgba(10, 20, 40, 0.75)',
-  costPillStroke: 'rgba(102, 255, 170, 0.3)',
+  // Canvas drawing — cost labels (cost = money = gold)
+  costText: '#ffd24d',
+  costTextDim: '#ffd24d80',
+  costPillBg: 'rgba(32, 20, 8, 0.75)',
+  costPillStroke: 'rgba(255, 210, 77, 0.3)',
 
   // Canvas drawing — cost panel bar fills
-  barFillMain: 'rgba(102, 204, 255, 0.15)',
+  barFillMain: 'rgba(255, 102, 204, 0.15)',
   barFillSub: 'rgba(204, 136, 255, 0.15)',
 
   // ─── Transcript / message feed colors ───────────────────────────────────────
 
   // User messages
-  userMsgBg: 'rgba(255, 187, 68, 0.06)',
-  userMsgBorder: 'rgba(255, 187, 68, 0.12)',
-  userLabel: '#ffbb4490',
-  userText: '#ffcc66',
+  userMsgBg: 'rgba(255, 210, 77, 0.06)',
+  userMsgBorder: 'rgba(255, 210, 77, 0.12)',
+  userLabel: '#ffd24d90',
+  userText: '#ffdd88',
 
   // Assistant messages
-  assistantLabel: '#66ccff80',
-  assistantText: '#aaeeff',
+  assistantLabel: '#ff66cc80',
+  assistantText: '#ffd9ee',
 
   // Thinking messages
   thinkingBgExpanded: 'rgba(180, 140, 255, 0.06)',
@@ -176,20 +177,20 @@ export const COLORS = {
   thinkingBorderLeft: 'rgba(180, 140, 255, 0.15)',
 
   // Tool call messages
-  toolCallBg: 'rgba(255, 187, 68, 0.05)',
-  toolCallBorder: 'rgba(255, 187, 68, 0.1)',
+  toolCallBg: 'rgba(255, 210, 77, 0.05)',
+  toolCallBorder: 'rgba(255, 210, 77, 0.1)',
 
   // Tool result messages
   bashResultBg: 'rgba(0,0,0,0.25)',
   toolResultBg: 'rgba(102, 255, 170, 0.04)',
-  bashResultBorder: 'rgba(255, 187, 68, 0.1)',
+  bashResultBorder: 'rgba(255, 210, 77, 0.1)',
   toolResultBorder: 'rgba(102, 255, 170, 0.08)',
-  bashResultText: '#aaeeff80',
+  bashResultText: '#ffd9ee80',
   toolResultText: '#66ffaa80',
-  textFaint: '#aaeeff60',
+  textFaint: '#ffd9ee60',
 
   // Search highlight
-  searchHighlightBg: 'rgba(255,187,68,0.3)',
+  searchHighlightBg: 'rgba(255,210,77,0.3)',
 
   // ─── Diff / code block colors ───────────────────────────────────────────────
 
@@ -201,26 +202,26 @@ export const COLORS = {
 
   // ─── Tool content colors ────────────────────────────────────────────────────
 
-  filePathActive: '#66ccff',
-  filePathInactive: '#66ccff90',
+  filePathActive: '#ff66cc',
+  filePathInactive: '#ff66cc90',
   todoCompleted: '#66ffaa',
   todoCompletedText: '#66ffaa90',
-  todoPending: '#66ccff60',
-  contentDim: '#aaeeff90',
-  searchIcon: '#66ccff60',
+  todoPending: '#ff66cc60',
+  contentDim: '#ffd9ee90',
+  searchIcon: '#ff66cc60',
 
   // ─── Panel header / chrome text ─────────────────────────────────────────────
 
-  panelLabel: '#66ccff90',
-  panelLabelDim: '#66ccff65',
-  scrollBtnText: '#66ccff',
-  scrollbarThumb: 'rgba(100,200,255,0.15)',
+  panelLabel: '#ff66cc90',
+  panelLabelDim: '#ff66cc65',
+  scrollBtnText: '#ff66cc',
+  scrollbarThumb: 'rgba(255,150,215,0.15)',
 } as const
 
 // ─── Role Colors (message feed & bubbles) ───────────────────────────────────
 
 export const ROLE_COLORS: Record<string, { bg: string; bgSelected: string; text: string; label: string }> = {
-  assistant: { bg: COLORS.roleAssistantBg, bgSelected: COLORS.roleAssistantBgSelected, text: COLORS.roleAssistantText, label: 'CLAUDE' },
+  assistant: { bg: COLORS.roleAssistantBg, bgSelected: COLORS.roleAssistantBgSelected, text: COLORS.roleAssistantText, label: 'CLIO' },
   thinking:  { bg: COLORS.roleThinkingBg,  bgSelected: COLORS.roleThinkingBgSelected,  text: COLORS.roleThinkingText,  label: 'THINKING' },
   user:      { bg: COLORS.roleUserBg,       bgSelected: COLORS.roleUserBgSelected,       text: COLORS.roleUserText,       label: 'USER' },
 } as const
@@ -248,7 +249,7 @@ export function getDiscoveryTypeColor(type: string): string {
   }
 }
 
-/** Safely combine a partial rgba base (e.g. 'rgba(10, 15, 30,') with an alpha value */
+/** Safely combine a partial rgba base (e.g. 'rgba(30, 10, 24,') with an alpha value */
 export function withAlpha(rgbaBase: string, alpha: number): string {
   return `${rgbaBase} ${alpha})`
 }

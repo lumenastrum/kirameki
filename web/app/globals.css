@@ -126,15 +126,15 @@
 
 /* Glass card effect */
 .glass-card {
-  background: rgba(10, 15, 30, 0.7);
+  background: rgba(30, 10, 24, 0.7);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(100, 200, 255, 0.15);
+  border: 1px solid rgba(255, 150, 215, 0.15);
   border-radius: 8px;
   padding: 12px;
   box-shadow:
     0 0 20px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(100, 200, 255, 0.08);
+    inset 0 1px 0 rgba(255, 150, 215, 0.08);
 }
 
 .glass-card::before {
@@ -147,7 +147,7 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(100, 200, 255, 0.15),
+    rgba(255, 150, 215, 0.15),
     transparent
   );
   border-radius: 8px 8px 0 0;
@@ -158,22 +158,22 @@
 .glass-card input,
 .glass-card textarea,
 .glass-card select {
-  background: rgba(100, 200, 255, 0.05) !important;
-  border: 1px solid rgba(100, 200, 255, 0.15) !important;
-  color: #aaeeff !important;
+  background: rgba(255, 150, 215, 0.05) !important;
+  border: 1px solid rgba(255, 150, 215, 0.15) !important;
+  color: #ffd9ee !important;
   font-family: monospace;
 }
 
 .glass-card input::placeholder,
 .glass-card textarea::placeholder {
-  color: rgba(102, 204, 255, 0.3);
+  color: rgba(255, 102, 204, 0.3);
 }
 
 .glass-card input:focus,
 .glass-card textarea:focus {
-  border-color: rgba(102, 204, 255, 0.3) !important;
+  border-color: rgba(255, 102, 204, 0.3) !important;
   outline: none;
-  box-shadow: 0 0 8px rgba(102, 204, 255, 0.1);
+  box-shadow: 0 0 8px rgba(255, 102, 204, 0.1);
 }
 
 /* Custom scrollbar for glass cards */
@@ -186,12 +186,12 @@
 }
 
 .glass-card ::-webkit-scrollbar-thumb {
-  background: rgba(100, 200, 255, 0.15);
+  background: rgba(255, 150, 215, 0.15);
   border-radius: 2px;
 }
 
 .glass-card ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 200, 255, 0.25);
+  background: rgba(255, 150, 215, 0.25);
 }
 
 /* Hide scrollbar but keep scroll functionality */

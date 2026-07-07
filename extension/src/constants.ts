@@ -78,13 +78,13 @@ export const NONCE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
 // ─── Webview Colors ─────────────────────────────────────────────────────────
 
 /** Void background color — matches the web COLORS.void value */
-export const WEBVIEW_BG_COLOR = '#050510'
+export const WEBVIEW_BG_COLOR = '#0f0510'
 
 /** Loading screen text color (dev mode only) */
-export const WEBVIEW_LOADING_TEXT = '#66ccff80'
+export const WEBVIEW_LOADING_TEXT = '#ff66cc80'
 
 /** Loading screen dim text color (dev mode only) */
-export const WEBVIEW_LOADING_TEXT_DIM = '#66ccff40'
+export const WEBVIEW_LOADING_TEXT_DIM = '#ff66cc40'
 
 // ─── Text Truncation Limits ──────────────────────────────────────────────────
 

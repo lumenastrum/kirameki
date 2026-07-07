@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'LLM Agent Visualizer',
-  description: 'Real-time visualization of LLM agent execution flows - VS Code extension concept',
+  title: 'Kirameki ✨',
+  description: 'Real-time visualization of AI agent orchestration — in pink and gold',
   generator: 'v0.app',
   icons: {
     icon: [
@@ -31,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className="font-sans antialiased bg-[#0a0a1a]">
+      <body className="font-sans antialiased bg-[#140a12]">
         {children}
       </body>
     </html>
